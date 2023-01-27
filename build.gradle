@@ -1,0 +1,27 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '2.7.8'
+	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+	id 'com.google.cloud.tools.jib' version '3.2.1'
+}
+apply plugin: 'com.google.cloud.tools.jib'
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = "11"
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.telegram:telegrambots-spring-boot-starter:6.1.0'
+	implementation 'org.jsoup:jsoup:1.15.3'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+targetCompatibility = JavaVersion.VERSION_11
