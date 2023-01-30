@@ -1,15 +1,19 @@
 package com.example.demo;
 
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 
 @Component
+@EnableScheduling
 public class TernopilLight_bot extends TelegramLongPollingBot {
     @Override
     public String getBotUsername() {
@@ -27,7 +31,7 @@ public class TernopilLight_bot extends TelegramLongPollingBot {
             var msg = update.getMessage();
             var chatId = msg.getChatId();
             try {
-                var reply = Main.resp();
+                var reply = calculateMessage();
                 sendNotification(String.valueOf(chatId), reply);
             } catch (TelegramApiException e) {
                 throw new RuntimeException(e);
@@ -36,7 +40,29 @@ public class TernopilLight_bot extends TelegramLongPollingBot {
     }
 
     private void sendNotification(String chatId, String msg) throws TelegramApiException {
-        var response = new SendMessage(chatId, msg);
+        var response = new SendMessage(chatId, msg, "HTML",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
         execute(response);
+    }
+
+    @Scheduled(cron = "0 0 */3 * * *", zone = "Europe/Kiev")
+    public void sendUpdateToChannel() {
+        try {
+            sendNotification("-1001866754700", calculateMessage());
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String calculateMessage() {
+        var now = LocalDateTime.now(ZoneId.of("Europe/Kiev"));
+        var then = now.plusHours(3);
+        return Main.resp(now) + Main.getUntil(now) + ". <a href=\"https://www.toe.com.ua/index.php/hrafik-pohodynnykh-vymknen-spozhyvachiv\">Далі</a> " + Main.resp(then);
     }
 }

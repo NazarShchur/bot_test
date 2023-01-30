@@ -8,10 +8,7 @@ import org.jsoup.select.Elements;
 import org.springframework.cglib.core.Local;
 
 import java.io.IOException;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,27 +39,31 @@ public class Main {
             default : return null;
         }
     }
-    public static String resp() {
-        DayOfWeek todaysDay = LocalDate.now(ZoneId.of("Europe/Kiev")).getDayOfWeek();
+    public static String resp(LocalDateTime time) {
+        DayOfWeek todaysDay = time.getDayOfWeek();
         String html = "https://www.toe.com.ua/index.php/hrafik-pohodynnykh-vymknen-spozhyvachiv";
         try {
             Document doc = Jsoup.connect(html).get();
             Element tableElements = doc.selectFirst("table");
             Elements tableHeaderEles = tableElements.select("tr");
-            var tr = getTrIndex(tableHeaderEles);
-            var td = getTdIndex(tableHeaderEles.first());
+            var tr = getTrIndex(tableHeaderEles, time);
+            var td = getTdIndex(tableHeaderEles.first(), time);
             var style = tableHeaderEles.get(tr).children().get(td).attributes().get("style");
-            if (style.contains("#00ff00")) {
-                return "ЗЕЛЕНА ЗОНА " + getUntil();
-            } else if (style.contains("#ff3300")) {
-                return "ЧЕРВОНА ЗОНА" + getUntil();
-            } else {
-                return "ОРАНЖЕВА ЗОНА" + getUntil();
-            }
+            return getColor(style) + " ЗОНА";
         } catch (IOException e) {
             e.printStackTrace();
         }
         return "ERROR";
+    }
+
+    public static String getColor(String style) {
+        if (style.contains("#00ff00")) {
+            return "ЗЕЛЕНА";
+        } else if (style.contains("#ff3300")) {
+            return "ЧЕРВОНА";
+        } else {
+            return "ОРАНЖЕВА";
+        }
     }
 
     public static List<Node> getColumnOfToday(List<Node> list) {
@@ -72,8 +73,8 @@ public class Main {
         return null;
     }
 
-    public static int getTrIndex(Elements elements) {
-        var now = LocalTime.now(ZoneId.of("Europe/Kiev"));
+    public static int getTrIndex(Elements elements, LocalDateTime time) {
+        var now = LocalTime.of(time.getHour(), time.getMinute(), time.getSecond());
         for (int i = 0, j = 3 ; i < 21; i+= 3, j++) {
             if (now.isAfter(LocalTime.of(i, 0)) && now.isBefore(LocalTime.of(i + 3, 0))) {
                 return j;
@@ -82,8 +83,8 @@ public class Main {
         return 10;
     }
 
-    public static int getTdIndex(Element element) {
-        var day = dayOfWeek(LocalDate.now(ZoneId.of("Europe/Kiev")).getDayOfWeek());
+    public static int getTdIndex(Element element, LocalDateTime time) {
+        var day = dayOfWeek(time.getDayOfWeek());
         for (int i = 0; i < element.children().size(); i++) {
             if (element.children().get(i).text().contains(day)) {
                 if (i == 3) {
@@ -98,8 +99,8 @@ public class Main {
         return -1;
     }
 
-    public static String getUntil() {
-        var now = LocalTime.now(ZoneId.of("Europe/Kiev"));
+    public static String getUntil(LocalDateTime time) {
+        var now = LocalTime.of(time.getHour(), time.getMinute(), time.getSecond());
         for (int i = 0 ; i < 21; i+= 3) {
             if (now.isAfter(LocalTime.of(i, 0)) && now.isBefore(LocalTime.of(i + 3, 0))) {
                 var a = i + 3;
