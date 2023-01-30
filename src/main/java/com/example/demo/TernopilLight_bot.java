@@ -54,8 +54,15 @@ public class TernopilLight_bot extends TelegramLongPollingBot {
     @Scheduled(cron = "0 0 */3 * * *", zone = "Europe/Kiev")
     public void sendUpdateToChannel() {
         try {
-            sendNotification("-1001866754700", calculateMessage());
-        } catch (TelegramApiException e) {
+            var message = calculateMessage();
+            if (message.contains("ERROR")) {
+                System.out.println("ERROR");
+                Thread.sleep(60000);
+                sendUpdateToChannel();
+                return;
+            }
+            sendNotification("-1001866754700", message);
+        } catch (TelegramApiException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
