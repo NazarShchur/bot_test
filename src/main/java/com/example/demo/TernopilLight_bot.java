@@ -6,6 +6,9 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.time.LocalTime;
+import java.time.ZoneId;
+
 @Component
 public class TernopilLight_bot extends TelegramLongPollingBot {
     @Override

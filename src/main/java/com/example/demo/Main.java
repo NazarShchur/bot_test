@@ -5,11 +5,13 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
+import org.springframework.cglib.core.Local;
 
 import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +43,7 @@ public class Main {
         }
     }
     public static String resp() {
-        DayOfWeek todaysDay = LocalDate.now().getDayOfWeek();
+        DayOfWeek todaysDay = LocalDate.now(ZoneId.of("Europe/Kiev")).getDayOfWeek();
         String html = "https://www.toe.com.ua/index.php/hrafik-pohodynnykh-vymknen-spozhyvachiv";
         try {
             Document doc = Jsoup.connect(html).get();
@@ -51,11 +53,11 @@ public class Main {
             var td = getTdIndex(tableHeaderEles.first());
             var style = tableHeaderEles.get(tr).children().get(td).attributes().get("style");
             if (style.contains("#00ff00")) {
-                return "ЗЕЛЕНА ЗОНА";
+                return "ЗЕЛЕНА ЗОНА " + getUntil();
             } else if (style.contains("#ff3300")) {
-                return "ЧЕРВОНА ЗОНА";
+                return "ЧЕРВОНА ЗОНА" + getUntil();
             } else {
-                return "ОРАНЖЕВА ЗОНА";
+                return "ОРАНЖЕВА ЗОНА" + getUntil();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -71,7 +73,7 @@ public class Main {
     }
 
     public static int getTrIndex(Elements elements) {
-        var now = LocalTime.now();
+        var now = LocalTime.now(ZoneId.of("Europe/Kiev"));
         for (int i = 0, j = 3 ; i < 21; i+= 3, j++) {
             if (now.isAfter(LocalTime.of(i, 0)) && now.isBefore(LocalTime.of(i + 3, 0))) {
                 return j;
@@ -81,7 +83,7 @@ public class Main {
     }
 
     public static int getTdIndex(Element element) {
-        var day = dayOfWeek(LocalDate.now().getDayOfWeek());
+        var day = dayOfWeek(LocalDate.now(ZoneId.of("Europe/Kiev")).getDayOfWeek());
         for (int i = 0; i < element.children().size(); i++) {
             if (element.children().get(i).text().contains(day)) {
                 if (i == 3) {
@@ -94,5 +96,16 @@ public class Main {
             }
         }
         return -1;
+    }
+
+    public static String getUntil() {
+        var now = LocalTime.now(ZoneId.of("Europe/Kiev"));
+        for (int i = 0 ; i < 21; i+= 3) {
+            if (now.isAfter(LocalTime.of(i, 0)) && now.isBefore(LocalTime.of(i + 3, 0))) {
+                var a = i + 3;
+                return " ДО " + a + ":00";
+            }
+        }
+        return " ДО " + "00" + ":00";
     }
 }
