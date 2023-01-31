@@ -51,7 +51,7 @@ public class TernopilLight_bot extends TelegramLongPollingBot {
         execute(response);
     }
 
-    @Scheduled(cron = "0 0 */3 * * *", zone = "Europe/Kiev")
+    @Scheduled(cron = "0 2 */3 * * *", zone = "Europe/Kiev")
     public void sendUpdateToChannel() {
         try {
             var message = calculateMessage();
