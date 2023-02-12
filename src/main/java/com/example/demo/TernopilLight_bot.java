@@ -51,7 +51,7 @@ public class TernopilLight_bot extends TelegramLongPollingBot {
         execute(response);
     }
 
-    @Scheduled(cron = "0 2 */3 * * *", zone = "Europe/Kiev")
+    @Scheduled(cron = "0 1 */3 * * *", zone = "Europe/Kiev")
     public void sendUpdateToChannel() {
         try {
             var message = calculateMessage();
@@ -67,9 +67,32 @@ public class TernopilLight_bot extends TelegramLongPollingBot {
         }
     }
 
+    @Scheduled(cron = "0 50 */1 * * *", zone = "Europe/Kiev")
+    public void notifyGreenEnd() {
+        try {
+            var now = LocalDateTime.now(ZoneId.of("Europe/Kiev"));
+            var message = Main.resp(now);
+            if (message.contains("ERROR")) {
+                System.out.println("ERROR");
+                Thread.sleep(60000);
+                notifyGreenEnd();
+                return;
+            }
+            if (message.contains("ЗЕЛЕНА") && (now.getHour() + 1)%3 == 0) {
+                sendNotification("-1001866754700", "\uD83D\uDEA8 УВАГА. ЗЕЛЕНА ЗОНА ЗАКІНЧИТЬСЯ ЧЕРЕЗ 10 хв");
+            }
+        } catch (TelegramApiException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private String calculateMessage() {
         var now = LocalDateTime.now(ZoneId.of("Europe/Kiev"));
         var then = now.plusHours(3);
-        return Main.resp(now) + Main.getUntil(now) + ". <a href=\"https://www.toe.com.ua/index.php/hrafik-pohodynnykh-vymknen-spozhyvachiv\">Далі</a> " + Main.resp(then);
+        return Main.resp(now)
+                + Main.getUntil(now)
+                + ". Далі "
+                + Main.resp(then)
+                + Main.todaysGraph(now);
     }
 }

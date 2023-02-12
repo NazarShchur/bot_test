@@ -29,19 +29,18 @@ public class Main {
 
     public static String dayOfWeek(DayOfWeek day) {
         switch (day) {
-            case MONDAY : return "понеділок";
-            case TUESDAY : return "вівторок";
-            case WEDNESDAY: return "середа";
-            case THURSDAY: return "четвер";
-            case FRIDAY : return "п'ятниця";
-            case SATURDAY : return "субота";
-            case SUNDAY : return "неділя";
+            case MONDAY : return "Понеділок";
+            case TUESDAY : return "Вівторок";
+            case WEDNESDAY: return "Середа";
+            case THURSDAY: return "Четвер";
+            case FRIDAY : return "П'ятниця";
+            case SATURDAY : return "Субота";
+            case SUNDAY : return "Неділя";
             default : return null;
         }
     }
     public static String resp(LocalDateTime time) {
-        DayOfWeek todaysDay = time.getDayOfWeek();
-        String html = "https://www.toe.com.ua/index.php/hrafik-pohodynnykh-vymknen-spozhyvachiv";
+        String html = "https://www.toe.com.ua/index.php/component/content/article?id=1803";
         try {
             Document doc = Jsoup.connect(html).get();
             Element tableElements = doc.selectFirst("table");
@@ -56,6 +55,46 @@ public class Main {
         return "ERROR";
     }
 
+    public static String todaysGraph(LocalDateTime time) {
+        String html = "https://www.toe.com.ua/index.php/component/content/article?id=1803";
+        try {
+            var sb = new StringBuilder();
+            sb.append("\n");
+            Document doc = Jsoup.connect(html).get();
+            Element tableElements = doc.selectFirst("table");
+            Elements tableHeaderEles = tableElements.select("tr");
+            var td = getTdIndex(tableHeaderEles.first(), time);
+            for (int i = 3; i < tableHeaderEles.size(); i++) {
+                var tr = tableHeaderEles.get(i);
+                var style = tableHeaderEles.get(i).children().get(td).attributes().get("style");
+                sb.append(tr.text());
+                sb.append(" - ");
+                sb.append(getColorEmoji(style));
+                sb.append("\n");
+
+            }
+            return sb.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "ERROR";
+    }
+
+    public static String getColorEmoji(String style) {
+        if (style.contains("#00ff00")) {
+            return "🟩";
+        } else if (style.contains("#ff3300")) {
+            return "🟥";
+        } else {
+            return "🟧";
+        }
+    }
+
+    public static void main(String[] args) {
+        var a = '\uD83D';
+
+        return;
+    }
     public static String getColor(String style) {
         if (style.contains("#00ff00")) {
             return "ЗЕЛЕНА";
@@ -109,4 +148,8 @@ public class Main {
         }
         return " ДО " + "00" + ":00";
     }
+
+//    public static int indexOfToday(Elements elements, LocalDateTime time) {
+//        elements.filter(e -> e.outerHtml().contains())
+//    }
 }
